@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    container_name: ml_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./models:/app/models
+    restart: always
+
+  bot:
+    build:
+      context: .
+      dockerfile: tg_bot/Dockerfile
+    container_name: telegram_bot
+    depends_on:
+      - api
+    environment:
+      - API_URL=http://api:8000/predict
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+    restart: always

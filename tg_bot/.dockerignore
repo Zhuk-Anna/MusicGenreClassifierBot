@@ -1,0 +1,5 @@
+venv_bot/
+__pycache__/
+*.pyc
+.env
+.git

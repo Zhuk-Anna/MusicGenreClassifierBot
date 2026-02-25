@@ -1,0 +1,21 @@
+# virtual env
+venv_api/
+venv_bot/
+
+# env files
+.env
+
+# logs
+logs/
+*.log
+
+# python
+__pycache__/
+*.pyc
+
+# temp
+tmp/
+
+# IDE
+.vscode/
+.idea/
