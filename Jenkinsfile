@@ -13,39 +13,55 @@ pipeline {
                 sh 'pwd'
                 sh 'java -version'
                 sh 'docker --version'
-                //sh 'docker compose version'
+                sh 'docker compose version'
             }
         }
 
-//         stage('Build API Image') {
-//             steps {
-//                 sh 'docker build -t music-api:latest ./api'
-//             }
-//         }
-//
-//         stage('Build Bot Image') {
-//             steps {
-//                 sh 'docker build -t music-bot:latest ./tg_bot'
-//             }
-//         }
-//
-//         stage('Save Images') {
-//             steps {
-//                 sh 'docker save music-api:latest -o music-api.tar'
-//                 sh 'docker save music-bot:latest -o music-bot.tar'
-//             }
-//         }
+        stage('Build API Image') {
+            steps {
+                echo "Building API Docker image..."
+                sh 'docker build -t music-api:latest ./api'
+            }
+        }
+
+        stage('Build Bot Image') {
+            steps {
+                echo "Building Telegram Bot Docker image..."
+                sh 'docker build -t music-bot:latest ./tg_bot'
+            }
+        }
+
+        stage('Save Images') {
+            steps {
+                echo "Saving Docker images as tar files..."
+                sh 'docker save music-api:latest -o music-api.tar'
+                sh 'docker save music-bot:latest -o music-bot.tar'
+            }
+        }
+
+        stage('Optional: Test Containers') {
+            steps {
+                echo "Starting containers with docker-compose for testing..."
+
+                // Запускаем контейнеры через docker-compose
+                sh 'TELEGRAM_TOKEN=${TELEGRAM_TOKEN} docker-compose up -d'
+
+                // Проверяем, что контейнеры поднялись
+                sh 'docker ps'
+
+                echo "Wait some time to check app..."
+                sh 'sleep 300' //  5 minutes
+                sh 'docker-compose down'
+            }
+        }
     }
 
     post {
-//         success {
-//             archiveArtifacts artifacts: '*.tar', fingerprint: true
-//         }
-            success{
-                echo 'Success'
-            }
-            failure{
-                echo 'Failure'
-            }
+        success {
+            archiveArtifacts artifacts: '*.tar', fingerprint: true
+        }
+        failure{
+            echo 'Failure'
+        }
     }
 }
