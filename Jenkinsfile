@@ -31,11 +31,28 @@ pipeline {
             }
         }
 
-        stage('Save Images') {
+        stage('Login to Docker Hub and push Images') {
             steps {
-                echo "Saving Docker images as tar files..."
-                sh 'docker save music-api:latest -o music-api.tar'
-                sh 'docker save music-bot:latest -o music-bot.tar'
+                withCredentials([usernamePassword(
+                    credentialsId: 'Dockerhub_AZ',
+                    usernameVariable: 'DOCKERHUB_USER',
+                    passwordVariable: 'DOCKERHUB_PASS'
+                )]) {
+                    sh 'echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin'
+
+                    // ===== API IMAGE =====
+                    sh 'docker tag music-api:latest $DOCKERHUB_USER/music-api:${BUILD_NUMBER}'
+                    sh 'docker push $DOCKERHUB_USER/music-api:${BUILD_NUMBER}'
+                    sh 'docker tag music-api:latest $DOCKERHUB_USER/music-api:latest'
+                    sh 'docker push $DOCKERHUB_USER/music-api:latest'
+
+                    // ===== BOT IMAGE =====
+                    sh 'docker tag music-bot:latest $DOCKERHUB_USER/music-bot:${BUILD_NUMBER}'
+                    sh 'docker push $DOCKERHUB_USER/music-bot:${BUILD_NUMBER}'
+                    sh 'docker tag music-bot:latest $DOCKERHUB_USER/music-bot:latest'
+                    sh 'docker push $DOCKERHUB_USER/music-bot:latest'
+
+                    sh 'docker logout'
             }
         }
 
@@ -58,10 +75,10 @@ pipeline {
 
     post {
         success {
-            archiveArtifacts artifacts: '*.tar', fingerprint: true
+            echo 'Pipeline succeeded'
         }
         failure{
-            echo 'Failure'
+            echo 'Pipeline failed'
         }
     }
 }
