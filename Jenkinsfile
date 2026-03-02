@@ -20,14 +20,14 @@ pipeline {
         stage('Build API Image') {
             steps {
                 echo "Building API Docker image..."
-                sh 'docker build -t music-api:latest ./api'
+                sh 'docker build -t music-api:latest -f api/Dockerfile .'
             }
         }
 
         stage('Build Bot Image') {
             steps {
                 echo "Building Telegram Bot Docker image..."
-                sh 'docker build -t music-bot:latest ./tg_bot'
+                sh 'docker build -t music-bot:latest -f tg_bot/Dockerfile .'
             }
         }
 
