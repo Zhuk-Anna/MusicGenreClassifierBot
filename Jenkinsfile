@@ -43,18 +43,21 @@ pipeline {
                 // Проверяем, что контейнеры поднялись
                 sh 'docker ps'
 
-                echo "Waiting for API..."
+                echo "Waiting for API container to become healthy..."
 
                 sh '''
-                    for i in {1..30}; do
-                      if curl -f http://localhost:8000/health; then
-                        echo "API is ready"
+                for i in {1..30}; do
+                    STATUS=$(docker inspect --format='{{.State.Health.Status}}' music-api 2>/dev/null || echo "starting")
+                    echo "Current health status: $STATUS"
+                    if [ "$STATUS" = "healthy" ]; then
+                        echo "API container is healthy!"
                         exit 0
-                      fi
-                      sleep 10
-                    done
-                    echo "API did not become ready"
-                    exit 1
+                    fi
+                    sleep 10
+                done
+
+                echo "API container failed to become healthy"
+                exit 1
                 '''
             }
         }
@@ -94,7 +97,8 @@ pipeline {
             echo 'Pipeline failed'
         }
         always {
-            sh 'docker compose down || true' // для тестовых контейнеров
+            echo "Shutting down containers after tests..."
+            sh 'docker compose down || true'
         }
     }
 }
