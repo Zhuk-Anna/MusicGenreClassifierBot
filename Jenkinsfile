@@ -53,22 +53,23 @@ pipeline {
                     sh 'docker push $DOCKERHUB_USER/music-bot:latest'
 
                     sh 'docker logout'
+                }
             }
         }
 
         stage('Optional: Test Containers') {
             steps {
-                echo "Starting containers with docker-compose for testing..."
+                echo "Starting containers with docker compose for testing..."
 
                 // Запускаем контейнеры через docker-compose
-                sh 'TELEGRAM_TOKEN=${TELEGRAM_TOKEN} docker-compose up -d'
+                sh 'TELEGRAM_TOKEN=${TELEGRAM_TOKEN} docker compose up -d'
 
                 // Проверяем, что контейнеры поднялись
                 sh 'docker ps'
 
                 echo "Wait some time to check app..."
                 sh 'sleep 300' //  5 minutes
-                sh 'docker-compose down'
+                sh 'docker compose down'
             }
         }
     }
@@ -77,7 +78,7 @@ pipeline {
         success {
             echo 'Pipeline succeeded'
         }
-        failure{
+        failure {
             echo 'Pipeline failed'
         }
     }
