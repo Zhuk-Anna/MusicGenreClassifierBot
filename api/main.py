@@ -49,8 +49,8 @@ app.add_middleware(
 )
 
 
-@app.get("/")
-async def root():
+@app.get("/health")
+async def health():
     return {"message": "Music Genre Classification API is running"}
 
 

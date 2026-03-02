@@ -31,6 +31,34 @@ pipeline {
             }
         }
 
+        stage('Test Containers') {
+            steps {
+                echo "Starting containers with docker compose for testing..."
+
+                // Запускаем контейнеры через docker-compose
+                withEnv(["TELEGRAM_TOKEN=${TELEGRAM_TOKEN}"]) {
+                    sh 'docker compose up -d'
+                }
+
+                // Проверяем, что контейнеры поднялись
+                sh 'docker ps'
+
+                echo "Waiting for API..."
+
+                sh '''
+                    for i in {1..30}; do
+                      if curl -f http://localhost:8000/health; then
+                        echo "API is ready"
+                        exit 0
+                      fi
+                      sleep 10
+                    done
+                    echo "API did not become ready"
+                    exit 1
+                '''
+            }
+        }
+
         stage('Login to Docker Hub and push Images') {
             steps {
                 withCredentials([usernamePassword(
@@ -56,22 +84,6 @@ pipeline {
                 }
             }
         }
-
-        stage('Optional: Test Containers') {
-            steps {
-                echo "Starting containers with docker compose for testing..."
-
-                // Запускаем контейнеры через docker-compose
-                sh 'TELEGRAM_TOKEN=${TELEGRAM_TOKEN} docker compose up -d'
-
-                // Проверяем, что контейнеры поднялись
-                sh 'docker ps'
-
-                echo "Wait some time to check app..."
-                sh 'sleep 300' //  5 minutes
-                sh 'docker compose down'
-            }
-        }
     }
 
     post {
@@ -80,6 +92,9 @@ pipeline {
         }
         failure {
             echo 'Pipeline failed'
+        }
+        always {
+            sh 'docker compose down || true' // для тестовых контейнеров
         }
     }
 }
