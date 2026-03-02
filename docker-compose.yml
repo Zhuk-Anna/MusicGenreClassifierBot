@@ -9,7 +9,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./models:/app/models
+      - ./logs:/app/logs
     restart: always
 
   bot:
@@ -22,4 +22,6 @@ services:
     environment:
       - API_URL=http://api:8000/predict
       - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+    volumes:
+      - ./logs:/app/logs
     restart: always

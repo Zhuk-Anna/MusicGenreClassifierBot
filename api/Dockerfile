@@ -2,16 +2,12 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Копируем requirements
-COPY requirements.txt .
-
+COPY api/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копируем api код
-COPY . /app/api
+COPY api /app/api
 
-# Копируем папку models
-COPY ../models /app/models
+COPY models /app/models
 
 EXPOSE 8000
 
