@@ -13,7 +13,7 @@ pipeline {
                 sh 'pwd'
                 sh 'java -version'
                 sh 'docker --version'
-                sh 'docker compose version'
+                //sh 'docker compose version'
             }
         }
 
