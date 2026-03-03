@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: api/Dockerfile
-    container_name: ml_api
+    container_name: music-api
     ports:
       - "8000:8000"
     volumes:
@@ -16,7 +16,7 @@ services:
     build:
       context: .
       dockerfile: tg_bot/Dockerfile
-    container_name: telegram_bot
+    container_name: music-bot
     depends_on:
       - api
     environment:

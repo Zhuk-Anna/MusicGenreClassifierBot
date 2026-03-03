@@ -1,10 +1,6 @@
 pipeline {
     agent { label 'AnnaZhuk' }
 
-    environment {
-        TELEGRAM_TOKEN = credentials('TG_Token_AZ') // из Jenkins Credentials
-    }
-
     stages {
         stage('Check server') {
             steps {
@@ -36,7 +32,7 @@ pipeline {
                 echo "Starting containers with docker compose for testing..."
 
                 // Запускаем контейнеры через docker-compose
-                withEnv(["TELEGRAM_TOKEN=${TELEGRAM_TOKEN}"]) {
+                withCredentials([string(credentialsId: 'TG_Token_AZ', variable: 'TELEGRAM_TOKEN')]) {
                     sh 'docker compose up -d'
                 }
 
@@ -45,9 +41,9 @@ pipeline {
 
                 echo "Waiting for API container to become healthy..."
 
-                sh '''
+                sh '''#!/bin/bash
                 for i in {1..30}; do
-                    STATUS=$(docker inspect --format='{{.State.Health.Status}}' music-api 2>/dev/null || echo "starting")
+                    STATUS=$(docker inspect --format='{{.State.Health.Status}}' ml_api 2>/dev/null || echo "starting")
                     echo "Current health status: $STATUS"
                     if [ "$STATUS" = "healthy" ]; then
                         echo "API container is healthy!"
