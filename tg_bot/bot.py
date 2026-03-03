@@ -117,8 +117,6 @@ async def handle_audio(update: Update, context: ContextTypes.DEFAULT_TYPE):
         downloaded_file = await context.bot.get_file(file.file_id)
         file_extension = get_file_extension(file)
 
-        TMP_DIR.mkdir(parents=True, exist_ok=True)
-
         with tempfile.TemporaryDirectory(dir=TMP_DIR) as tmpdir:
             temp_path = os.path.join(tmpdir, f"audio.{file_extension}")
 

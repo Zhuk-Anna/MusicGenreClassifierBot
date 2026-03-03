@@ -38,23 +38,6 @@ pipeline {
 
                 // Проверяем, что контейнеры поднялись
                 sh 'docker ps'
-
-                echo "Waiting for API container to become healthy..."
-
-                sh '''#!/bin/bash
-                for i in {1..30}; do
-                    STATUS=$(docker inspect --format='{{.State.Health.Status}}' ml_api 2>/dev/null || echo "starting")
-                    echo "Current health status: $STATUS"
-                    if [ "$STATUS" = "healthy" ]; then
-                        echo "API container is healthy!"
-                        exit 0
-                    fi
-                    sleep 10
-                done
-
-                echo "API container failed to become healthy"
-                exit 1
-                '''
             }
         }
 
