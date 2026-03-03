@@ -2,8 +2,6 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-RUN mkdir tmp
-
 COPY api/requirements.txt .
 
 RUN pip install --default-timeout=300 --no-cache-dir -r requirements.txt \
