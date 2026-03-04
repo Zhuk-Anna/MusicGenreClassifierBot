@@ -31,6 +31,8 @@ pipeline {
             steps {
                 echo "Starting containers with docker compose for testing..."
 
+                sh 'docker compose down'
+
                 // Запускаем контейнеры через docker-compose
                 withCredentials([string(credentialsId: 'TG_Token_AZ', variable: 'TELEGRAM_TOKEN')]) {
                     sh 'docker compose up -d'
@@ -75,9 +77,9 @@ pipeline {
         failure {
             echo 'Pipeline failed'
         }
-        always {
-            echo "Shutting down containers after tests..."
-            sh 'docker compose down || true'
-        }
+//         always {
+//             echo "Shutting down containers after tests..."
+//             sh 'docker compose down || true'
+//         }
     }
 }
