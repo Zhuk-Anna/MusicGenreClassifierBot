@@ -2,6 +2,7 @@ import aiohttp
 from aiohttp import ClientConnectorError
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
+from telegram.request import HTTPXRequest
 import os
 
 import tempfile
@@ -215,10 +216,18 @@ async def handle_unsupported(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 
 def main():
+    request = HTTPXRequest(
+        connect_timeout=30.0,
+        read_timeout=300.0,
+        write_timeout=120.0,
+        pool_timeout=30.0,
+    )
+
     # Создаем приложение
     application = (
         ApplicationBuilder()
         .token(TELEGRAM_TOKEN)
+        .request(request)
         .post_init(on_startup)
         .post_shutdown(on_shutdown)
         .build()
