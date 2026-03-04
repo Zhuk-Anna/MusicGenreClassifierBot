@@ -15,7 +15,12 @@ logger = get_logger()
 
 
 async def on_startup(application):
-    timeout = aiohttp.ClientTimeout(total=15)
+    timeout = aiohttp.ClientTimeout(
+        total=120,
+        connect=30,
+        sock_read=120,
+        sock_connect=30
+    )
     session = aiohttp.ClientSession(timeout=timeout)
     application.bot_data["http_session"] = session
 
