@@ -223,7 +223,7 @@ async def handle_unsupported(update: Update, context: ContextTypes.DEFAULT_TYPE)
 def main():
     request = HTTPXRequest(
         connect_timeout=30.0,
-        read_timeout=300.0,
+        read_timeout=180.0,
         write_timeout=120.0,
         pool_timeout=30.0,
     )
