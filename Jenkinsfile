@@ -30,14 +30,23 @@ pipeline {
         stage('Test Containers') {
             steps {
                 echo "Starting containers with docker compose for testing..."
-
-                sh 'docker compose down'
-
-                // Запускаем контейнеры через docker-compose
-                withCredentials([string(credentialsId: 'TG_Token_AZ', variable: 'TELEGRAM_TOKEN')]) {
-                    sh 'docker compose up -d'
+                withCredentials([usernamePassword(
+                    credentialsId: 'Dockerhub_AZ',
+                    usernameVariable: 'DOCKERHUB_USER',
+                    passwordVariable: 'DOCKERHUB_PASS'
+                )]) {
+                    withCredentials([string(
+                        credentialsId: 'TG_Token_AZ',
+                        variable: 'TELEGRAM_TOKEN'
+                    )]) {
+                        sh '''
+                            export DOCKERHUB_USER=$DOCKERHUB_USER
+                            docker compose down || true
+                            docker compose pull || true
+                            docker compose up -d
+                        '''
+                    }
                 }
-
                 // Проверяем, что контейнеры поднялись
                 sh 'docker ps'
             }

@@ -2,9 +2,7 @@ version: "3.9"
 
 services:
   api:
-    build:
-      context: .
-      dockerfile: api/Dockerfile
+    image: ${DOCKERHUB_USER}/music-api:latest
     container_name: music-api
     ports:
       - "8000:8000"
@@ -13,9 +11,7 @@ services:
     restart: always
 
   bot:
-    build:
-      context: .
-      dockerfile: tg_bot/Dockerfile
+    image: ${DOCKERHUB_USER}/music-bot:latest
     container_name: music-bot
     depends_on:
       - api
