@@ -8,4 +8,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY tg_bot /app/tg_bot
 
+RUN mkdir -p /app/tmp
+
 CMD ["python", "tg_bot/bot.py"]
