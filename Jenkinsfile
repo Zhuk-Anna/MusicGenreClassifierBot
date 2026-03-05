@@ -37,11 +37,13 @@ pipeline {
                             openstack stack wait ${STACK_NAME}
                         '''
 
-                        env.SERVER_IP = sh(
-                            script: "openstack stack output show ${env.STACK_NAME} server_ip -f value",
-                            returnStdout: true
-                        ).trim()
-                        echo "Server IP = ${env.SERVER_IP}"
+                        script {
+                            env.SERVER_IP = sh(
+                                script: "openstack stack output show ${env.STACK_NAME} server_ip -f value",
+                                returnStdout: true
+                            ).trim()
+                            echo "Server IP = ${env.SERVER_IP}"
+                        }
                     }
                 }
             }
