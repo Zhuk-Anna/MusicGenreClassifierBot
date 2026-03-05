@@ -59,12 +59,15 @@ pipeline {
 
                         script {
                             def serverIP = sh(
-                                script: "openstack stack output show ${env.STACK_NAME} server_ip -f value | tr -d '[:space:]'",
+                                script: "openstack stack output show ${env.STACK_NAME} server_ip -f value | tail -n 1",
                                 returnStdout: true
                             ).trim()
                             env.SERVER_IP = serverIP
                             echo "Server IP saved: ${env.SERVER_IP}"
                         }
+                        sh '''
+                        openstack stack output show ${STACK_NAME} server_ip -f json | jq -r '.output_value'
+                        '''
                     }
                 }
             }
