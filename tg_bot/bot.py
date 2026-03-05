@@ -45,7 +45,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [KeyboardButton("Загрузить файл")],
         [KeyboardButton("О системе"),
-         KeyboardButton("Сообщить об ошибке")]
+         KeyboardButton("Сообщить об ошибке"),
+         KeyboardButton("Помощь")]
     ]
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
     
@@ -56,7 +57,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "📊 Максимальный размер: 20 МБ\n\n"
         "Доступные команды:\n"
         "/start - показать это сообщение\n"
-        "/help - помощь\n"
+        "/help - помощь по использованию\n"
         "/info - информация о системе\n\n"
     )
     
@@ -71,9 +72,10 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "🎵 Помощь по использованию бота 🎵\n\n"
         "Как использовать:\n"
         "1. Отправьте аудиофайл в формате MP3, WAV или OGG\n"
-        "2. Дождитесь обработки (несколько секунд)\n"
+        "2. Дождитесь обработки (несколько секунд*)\n"
+        "*Из-за замедления Telegram сейчас время обработки увеличено до нескольких минут.\n"
         "3. Получите результат классификации жанра\n"
-        "Ограничения:\n"
+        "\nОграничения:\n"
         "• Максимальный размер файла: 20 МБ\n"
         "• Поддерживаемые жанры: " + ", ".join(genres) + "\n\n"
         "Если возникли проблемы - используйте кнопку 'Сообщить об ошибке'"
@@ -92,7 +94,8 @@ async def info_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "\n\nТехнологии:\n"
         "• Модель: CNN + RNN нейросеть\n"
         "• Точность: >90% на тестовых данных\n"
-        "• Время обработки: <15 секунд\n\n"
+        "• Время обработки: <15 секунд*\n"
+        "*Из-за замедления Telegram сейчас время обработки увеличено до нескольких минут."
     )
     await update.message.reply_text(info_text)
 
@@ -176,7 +179,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Если ждём описание ошибки
     if context.user_data.get("awaiting_error_report"):
-        if text.lower() not in ["загрузить файл", "о системе", "сообщить об ошибке"]:
+        if text.lower() not in ["загрузить файл", "о системе", "сообщить об ошибке", "помощь"]:
             logger.user_error_report(f"user={user.id} error_report='{text}'")
 
             await update.message.reply_text(
@@ -192,6 +195,8 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("📎 Пожалуйста, отправьте аудиофайл для классификации жанра.")
     elif text == "о системе":
         await info_command(update, context)
+    elif text == "помощь":
+        await help_command(update, context)
     elif text == "сообщить об ошибке":
         context.user_data["awaiting_error_report"] = True
         await update.message.reply_text(

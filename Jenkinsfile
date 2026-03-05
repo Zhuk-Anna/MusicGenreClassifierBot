@@ -27,30 +27,30 @@ pipeline {
             }
         }
 
-//         stage('Test Containers') {
-//             steps {
-//                 echo "Starting containers with docker compose for testing..."
-//                 withCredentials([usernamePassword(
-//                     credentialsId: 'Dockerhub_AZ',
-//                     usernameVariable: 'DOCKERHUB_USER',
-//                     passwordVariable: 'DOCKERHUB_PASS'
-//                 )]) {
-//                     withCredentials([string(
-//                         credentialsId: 'TG_Token_AZ',
-//                         variable: 'TELEGRAM_TOKEN'
-//                     )]) {
-//                         sh '''
-//                             export DOCKERHUB_USER=$DOCKERHUB_USER
-//                             docker compose down || true
-//                             docker compose pull || true
-//                             docker compose up -d
-//                         '''
-//                     }
-//                 }
-//                 // Проверяем, что контейнеры поднялись
-//                 sh 'docker ps'
-//             }
-//         }
+        stage('Test Containers') {
+            steps {
+                echo "Starting containers with docker compose for testing..."
+                withCredentials([usernamePassword(
+                    credentialsId: 'Dockerhub_AZ',
+                    usernameVariable: 'DOCKERHUB_USER',
+                    passwordVariable: 'DOCKERHUB_PASS'
+                )]) {
+                    withCredentials([string(
+                        credentialsId: 'TG_Token_AZ',
+                        variable: 'TELEGRAM_TOKEN'
+                    )]) {
+                        sh '''
+                            export DOCKERHUB_USER=$DOCKERHUB_USER
+                            docker compose down || true
+                            docker compose pull || true
+                            docker compose up -d
+                        '''
+                    }
+                }
+                // Проверяем, что контейнеры поднялись
+                sh 'docker ps'
+            }
+        }
 
         stage('Login to Docker Hub and push Images') {
             steps {
@@ -86,9 +86,9 @@ pipeline {
         failure {
             echo 'Pipeline failed'
         }
-//         always {
-//             echo "Shutting down containers after tests..."
-//             sh 'docker compose down || true'
-//         }
+        always {
+            echo "Shutting down containers after tests..."
+            sh 'docker compose down || true'
+        }
     }
 }
