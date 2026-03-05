@@ -2,13 +2,22 @@ pipeline {
     agent { label 'AnnaZhuk' }
     environment {
         STACK_NAME = "AZ_server_lab3"
-        OS_CLOUD   = 'mycloud' // for openstack client (without source students-openrc.sh)
     }
 
     stages {
         stage('Create or update Infrastructure') {
             steps {
                 withCredentials([string(credentialsId: 'Openstack_AZ', variable: 'OS_PASSWORD')]) {
+                    withEnv([
+                        "OS_AUTH_URL=https://cloud.crplab.ru:5000",
+                        "OS_PROJECT_NAME=students",
+                        "OS_USERNAME=master2025",
+                        "OS_USER_DOMAIN_NAME=Default",
+                        "OS_PROJECT_DOMAIN_ID=default",
+                        "OS_REGION_NAME=RegionOne",
+                        "OS_INTERFACE=public",
+                        "OS_IDENTITY_API_VERSION=3"
+                    ]) {
                     // Создаём стек в OpenStack через Heat (либо update при существующем)
                     sh '''
                         set -e
@@ -27,6 +36,16 @@ pipeline {
         stage('Wait for stack') {
             steps {
                 withCredentials([string(credentialsId: 'Openstack_AZ', variable: 'OS_PASSWORD')]) {
+                    withEnv([
+                        "OS_AUTH_URL=https://cloud.crplab.ru:5000",
+                        "OS_PROJECT_NAME=students",
+                        "OS_USERNAME=master2025",
+                        "OS_USER_DOMAIN_NAME=Default",
+                        "OS_PROJECT_DOMAIN_ID=default",
+                        "OS_REGION_NAME=RegionOne",
+                        "OS_INTERFACE=public",
+                        "OS_IDENTITY_API_VERSION=3"
+                    ]) {
                      sh '''
                         set -e
                         echo "Waiting for stack to finish..."
@@ -38,6 +57,16 @@ pipeline {
         stage('Get server IP') {
             steps {
                 withCredentials([string(credentialsId: 'Openstack_AZ', variable: 'OS_PASSWORD')]) {
+                    withEnv([
+                        "OS_AUTH_URL=https://cloud.crplab.ru:5000",
+                        "OS_PROJECT_NAME=students",
+                        "OS_USERNAME=master2025",
+                        "OS_USER_DOMAIN_NAME=Default",
+                        "OS_PROJECT_DOMAIN_ID=default",
+                        "OS_REGION_NAME=RegionOne",
+                        "OS_INTERFACE=public",
+                        "OS_IDENTITY_API_VERSION=3"
+                    ]) {
                     script {
                         env.SERVER_IP = sh(
                             script: """
