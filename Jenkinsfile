@@ -62,8 +62,8 @@ pipeline {
                                 script: "openstack stack output show ${env.STACK_NAME} server_ip -f value",
                                 returnStdout: true
                             ).trim()
-                            echo "Server IP = ${serverIP}"
                             env.SERVER_IP = serverIP
+                            echo "Server IP = ${env.SERVER_IP}"
                         }
                     }
                 }
@@ -74,25 +74,23 @@ pipeline {
             steps {
                 sshagent(['AnnaZhukSSH']) {
                     script {
-                        def serverIP = env.SERVER_IP
-                        echo "Server IP = ${serverIP}"
-
-                        withEnv(["TARGET_IP=${serverIP}"]) {
-                            sh """
-                                echo "Waiting for SSH to become available..."
+//                         def serverIP = env.SERVER_IP
+//                         echo "Server IP = ${serverIP}"
+                        echo "Waiting for SSH to become available..."
+                        withEnv(["TARGET_IP=${env.SERVER_IP}"]) {
+                            sh '''
                                 MAX_RETRIES=30
                                 COUNT=0
-
-                                until ssh -o StrictHostKeyChecking=no ubuntu@\$TARGET_IP "echo Server ready"; do
+                                until ssh -o StrictHostKeyChecking=no ubuntu@$TARGET_IP "echo Server ready"; do
                                     echo "Wait for SSH..."
                                     sleep 10
-                                    COUNT=\$((COUNT+1))
-                                    if [ \$COUNT -ge \$MAX_RETRIES ]; then
-                                        echo "SSH unavailable after \$MAX_RETRIES retries"
+                                    COUNT=$((COUNT+1))
+                                    if [ $COUNT -ge $MAX_RETRIES ]; then
+                                        echo "SSH unavailable after $MAX_RETRIES retries"
                                         exit 1
                                     fi
                                 done
-                            """
+                            '''
                         }
                     }
                 }
