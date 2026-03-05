@@ -73,11 +73,13 @@ pipeline {
         stage('Test SSH access'){
             steps{
                 sshagent(['AnnaZhukSSH']) {
+                script {
+                    def serverIP = env.SERVER_IP
                     sh """
                         echo "Waiting for SSH to become available..."
                         MAX_RETRIES=30
                         COUNT=0
-                        until ssh -o StrictHostKeyChecking=no ubuntu@${env.SERVER_IP} "echo Server ready"; do
+                        until ssh -o StrictHostKeyChecking=no ubuntu@${serverIP} "echo Server ready"; do
                             echo "Wait for SSH..."
                             sleep 10
                             COUNT=\$((COUNT+1))
