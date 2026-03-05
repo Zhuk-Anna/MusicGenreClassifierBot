@@ -1,0 +1,56 @@
+heat_template_version: 2018-08-31
+
+description: Template creates 1 server for music project deployment
+
+parameters:
+  image:
+    type: string
+    default: ubuntu-22.04
+
+  flavor:
+    type: string
+    default: m1.small
+
+  network:
+    type: string
+    default: students-net
+
+  key_name:
+    type: string
+    default: AnnaZ
+
+  volume_size:
+    type: number
+    default: 10
+
+resources:
+
+  music_volume:
+      type: OS::Cinder::Volume
+      properties:
+        size: { get_param: volume_size }
+        name: AZ-music-app-volume
+
+  music_server:
+    type: OS::Nova::Server
+    properties:
+      name: AZ-music-app-server
+      image: { get_param: image }
+      flavor: { get_param: flavor }
+      key_name: { get_param: key_name }
+
+      block_device_mapping_v2:
+        - volume_id: { get_resource: music_volume }
+          device_name: vda
+          delete_on_termination: true
+
+      networks:
+        - network: { get_param: network }
+      security_groups:
+        - students-general
+        - default
+
+outputs:
+  server_ip:
+      description: Server IP
+      value: { get_attr: [music_server, first_address] }

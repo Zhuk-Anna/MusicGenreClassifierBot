@@ -1,80 +1,46 @@
 pipeline {
     agent { label 'AnnaZhuk' }
+    environment {
+        STACK_NAME = "AZ_server_lab3"
+    }
 
     stages {
-        stage('Check server') {
+        stage('Create Infrastructure') {
             steps {
-                sh 'whoami'
-                sh 'hostname'
-                sh 'pwd'
-                sh 'java -version'
-                sh 'docker --version'
-                sh 'docker compose version'
-            }
-        }
-
-        stage('Build API Image') {
-            steps {
-                echo "Building API Docker image..."
-                sh 'docker build -t music-api:latest -f api/Dockerfile .'
-            }
-        }
-
-        stage('Build Bot Image') {
-            steps {
-                echo "Building Telegram Bot Docker image..."
-                sh 'docker build -t music-bot:latest -f tg_bot/Dockerfile .'
-            }
-        }
-
-//         stage('Test Containers') {
-//             steps {
-//                 echo "Starting containers with docker compose for testing..."
-//                 withCredentials([usernamePassword(
-//                     credentialsId: 'Dockerhub_AZ',
-//                     usernameVariable: 'DOCKERHUB_USER',
-//                     passwordVariable: 'DOCKERHUB_PASS'
-//                 )]) {
-//                     withCredentials([string(
-//                         credentialsId: 'TG_Token_AZ',
-//                         variable: 'TELEGRAM_TOKEN'
-//                     )]) {
-//                         sh '''
-//                             export DOCKERHUB_USER=$DOCKERHUB_USER
-//                             docker compose down || true
-//                             docker compose pull || true
-//                             docker compose up -d
-//                         '''
-//                     }
-//                 }
-//                 // Проверяем, что контейнеры поднялись
-//                 sh 'docker ps'
-//             }
-//         }
-
-        stage('Login to Docker Hub and push Images') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'Dockerhub_AZ',
-                    usernameVariable: 'DOCKERHUB_USER',
-                    passwordVariable: 'DOCKERHUB_PASS'
-                )]) {
-                    sh 'echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin'
-
-                    // ===== API IMAGE =====
-                    sh 'docker tag music-api:latest $DOCKERHUB_USER/music-api:${BUILD_NUMBER}'
-                    sh 'docker push $DOCKERHUB_USER/music-api:${BUILD_NUMBER}'
-                    sh 'docker tag music-api:latest $DOCKERHUB_USER/music-api:latest'
-                    sh 'docker push $DOCKERHUB_USER/music-api:latest'
-
-                    // ===== BOT IMAGE =====
-                    sh 'docker tag music-bot:latest $DOCKERHUB_USER/music-bot:${BUILD_NUMBER}'
-                    sh 'docker push $DOCKERHUB_USER/music-bot:${BUILD_NUMBER}'
-                    sh 'docker tag music-bot:latest $DOCKERHUB_USER/music-bot:latest'
-                    sh 'docker push $DOCKERHUB_USER/music-bot:latest'
-
-                    sh 'docker logout'
+                script {
+                    // Создаём стек в OpenStack через Heat (либо update при существующем)
+                    sh '''
+                        if openstack stack show ${STACK_NAME}; then
+                            echo "Stack exists. Updating..."
+                            openstack stack update -t infra/heat.yaml ${STACK_NAME}
+                        else
+                            echo "Creating stack..."
+                            openstack stack create -t infra/heat.yaml ${STACK_NAME}
+                        fi
+                    '''
                 }
+            }
+        }
+        stage('Wait for stack') {
+            steps {
+                sh 'openstack stack wait ${STACK_NAME}'
+            }
+        }
+        stage('Get server IP') {
+            steps {
+                script {
+                    env.SERVER_IP = sh(
+                        script: "openstack stack output show ${STACK_NAME} server_ip -f value",
+                        returnStdout: true
+                    ).trim()
+
+                    echo "Server IP = ${env.SERVER_IP}"
+                }
+            }
+        }
+        stage('Test infrastructure'){
+            steps{
+                sh "ssh ubuntu@${env.SERVER_IP} 'echo Server ready'"
             }
         }
     }
@@ -86,9 +52,5 @@ pipeline {
         failure {
             echo 'Pipeline failed'
         }
-//         always {
-//             echo "Shutting down containers after tests..."
-//             sh 'docker compose down || true'
-//         }
     }
 }
