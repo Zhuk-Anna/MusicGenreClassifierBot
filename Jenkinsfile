@@ -10,9 +10,7 @@ pipeline {
                 withCredentials([string(credentialsId: 'Openstack_AZ', variable: 'OS_PASSWORD')]) {
                     // Создаём стек в OpenStack через Heat (либо update при существующем)
                     sh '''
-                        set -e
-
-                        source ~/students-openrc.sh
+                        . ~/students-openrc.sh
 
                         if openstack stack show ${STACK_NAME}; then
                             echo "Stack exists. Updating..."
@@ -30,8 +28,7 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'Openstack_AZ', variable: 'OS_PASSWORD')]) {
                      sh '''
-                        set -e
-                        source ~/students-openrc.sh
+                        . ~/students-openrc.sh
 
                         echo "Waiting for stack to finish..."
                         openstack stack wait ${STACK_NAME}
@@ -45,7 +42,7 @@ pipeline {
                     script {
                         env.SERVER_IP = sh(
                             script: '''
-                                source ~/students-openrc.sh
+                                . ~/students-openrc.sh
                                 openstack stack output show ${STACK_NAME} server_ip -f value
                             ''',
                             returnStdout: true
