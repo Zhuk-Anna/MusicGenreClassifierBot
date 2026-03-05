@@ -5,7 +5,7 @@ description: Template creates 1 server for music project deployment
 parameters:
   image:
     type: string
-    default: ununtu-22.04 # bug in openstack 'ubuntu' name
+    default: ununtu-22.04 # bug in openstack 'ubuntu-22.04'
 
   flavor:
     type: string
@@ -13,7 +13,7 @@ parameters:
 
   network:
     type: string
-    default: students-net
+    default: sutdents-net # bug in openstack 'students-net'
 
   key_name:
     type: string
