@@ -65,6 +65,7 @@ pipeline {
 
                         ssh -o StrictHostKeyChecking=no ubuntu@${SERVER_IP} "echo Server ready"
                     '''
+                }
             }
         }
     }
