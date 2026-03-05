@@ -54,7 +54,7 @@ pipeline {
                                         ;;
                                 esac
                             done
-                            '''
+                        '''
 
                         script {
                             env.SERVER_IP = sh(
