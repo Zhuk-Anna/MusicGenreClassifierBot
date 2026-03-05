@@ -79,7 +79,7 @@ pipeline {
                             until ssh -o StrictHostKeyChecking=no ubuntu@$TARGET_IP "echo Server ready"; do
                                 echo "Wait for SSH..."
                                 sleep 10
-                                COUNT= $((COUNT+1))
+                                COUNT=$((COUNT+1))
                                 if [ $COUNT -ge $MAX_RETRIES ]; then
                                     echo "SSH unavailable after $MAX_RETRIES retries"
                                     exit 1
