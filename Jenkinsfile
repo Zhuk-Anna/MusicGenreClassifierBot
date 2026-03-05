@@ -58,16 +58,12 @@ pipeline {
                         '''
 
                         script {
-                            def serverIP = sh(
-                                script: "openstack stack output show ${env.STACK_NAME} server_ip -f value | tail -n 1",
+                            env.SERVER_IP = sh(
+                                script: "openstack stack output show ${env.STACK_NAME} server_ip -f json | jq -r '.output_value'",
                                 returnStdout: true
                             ).trim()
-                            env.SERVER_IP = serverIP
                             echo "Server IP saved: ${env.SERVER_IP}"
                         }
-                        sh '''
-                        openstack stack output show ${STACK_NAME} server_ip -f json | jq -r '.output_value'
-                        '''
                     }
                 }
             }
@@ -76,10 +72,9 @@ pipeline {
         stage('Test SSH access') {
             steps {
                 sshagent(['AnnaZhukSSH']) {
-
                     withEnv(["TARGET_IP=${env.SERVER_IP}"]) {
                         sh '''
-                            MAX_RETRIES=30
+                            MAX_RETRIES=6
                             COUNT=0
                             until ssh -o StrictHostKeyChecking=no ubuntu@$TARGET_IP "echo Server ready"; do
                                 echo "Wait for SSH..."
