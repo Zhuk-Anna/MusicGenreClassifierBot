@@ -37,7 +37,7 @@ pipeline {
                             echo "Waiting for stack to finish..."
 
                             while true; do
-                                STATUS=$(openstack stack show ${STACK_NAME} -f value -c stack_status)
+                                STATUS=$(openstack stack show ${STACK_NAME} -f json | jq -r '.stack_status')
                                 echo "Current status: $STATUS"
 
                                 case "$STATUS" in
