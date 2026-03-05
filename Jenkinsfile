@@ -34,8 +34,27 @@ pipeline {
                         sh '''
                             set -e
                             echo "Waiting for stack to finish..."
-                            openstack stack wait ${STACK_NAME}
-                        '''
+
+                            while true; do
+                                STATUS=$(openstack stack show ${STACK_NAME} -f value -c stack_status)
+                                echo "Current status: $STATUS"
+
+                                case "$STATUS" in
+                                    *_IN_PROGRESS)
+                                        sleep 10
+                                        ;;
+                                    *_COMPLETE)
+                                        echo "Stack finished successfully"
+                                        break
+                                        ;;
+                                    *_FAILED)
+                                        echo "Stack failed!"
+                                        openstack stack failures list ${STACK_NAME} || true
+                                        exit 1
+                                        ;;
+                                esac
+                            done
+                            '''
 
                         script {
                             env.SERVER_IP = sh(
