@@ -25,27 +25,28 @@ parameters:
 
 resources:
 
-  music_volume:
-      type: OS::Cinder::Volume
-      properties:
-        size: { get_param: volume_size }
-        name: AZ-music-app-volume
+#  music_volume:
+#      type: OS::Cinder::Volume
+#      properties:
+#        size: { get_param: volume_size }
+#        name: AZ-music-app-volume
 
   music_server:
     type: OS::Nova::Server
     properties:
       name: AZ-music-app-server
-      image: { get_param: image }
       flavor: { get_param: flavor }
       key_name: { get_param: key_name }
 
       block_device_mapping_v2:
-        - volume_id: { get_resource: music_volume }
-          device_name: vda
+        - image: { get_param: image }
+          volume_size: { get_param: volume_size }
+          boot_index: 0
           delete_on_termination: true
 
       networks:
         - network: { get_param: network }
+
       security_groups:
         - students-general
         - default
