@@ -22,7 +22,8 @@ pipeline {
                         sh '''
                             set -e
                             echo "Check if stack exists..."
-                            if openstack stack show ${STACK_NAME} >/dev/null 2>&1; then
+                            STACK_EXISTS=$(openstack stack list -f value -c "Stack Name" | grep -w "${STACK_NAME}" || true)
+                            if [ -n "$STACK_EXISTS" ]; then
                                 echo "Stack exists. Updating..."
                                 openstack stack update -t infra/heat/heat.yaml ${STACK_NAME}
                             else
