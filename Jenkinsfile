@@ -5,7 +5,7 @@ pipeline {
     }
 
     stages {
-        stage('Infrastructure') {
+        stage('Get server IP') {
             steps {
                 withCredentials([string(credentialsId: 'Openstack_AZ', variable: 'OS_PASSWORD')]) {
                     withEnv([
@@ -18,78 +18,57 @@ pipeline {
                         "OS_INTERFACE=public",
                         "OS_IDENTITY_API_VERSION=3"
                     ]) {
-
-                        sh '''
-                            set -e
-                            echo "Check if stack exists..."
-                            STACK_EXISTS=$(openstack stack list -f value -c "Stack Name" | grep -w "${STACK_NAME}" || true)
-                            if [ -n "$STACK_EXISTS" ]; then
-                                echo "Stack exists. Updating..."
-                                openstack stack update -t infra/heat/heat.yaml ${STACK_NAME}
-                            else
-                                echo "Creating stack..."
-                                openstack stack create -t infra/heat/heat.yaml ${STACK_NAME}
-                            fi
-                        '''
-
-                        sh '''
-                            set -e
-                            echo "Waiting for stack to finish..."
-
-                            while true; do
-                                STATUS=$(openstack stack show ${STACK_NAME} -f json | jq -r '.stack_status')
-                                echo "Current status: $STATUS"
-
-                                case "$STATUS" in
-                                    *_IN_PROGRESS)
-                                        sleep 10
-                                        ;;
-                                    *_COMPLETE)
-                                        echo "Stack finished successfully"
-                                        break
-                                        ;;
-                                    *_FAILED)
-                                        echo "Stack failed!"
-                                        openstack stack failures list ${STACK_NAME} || true
-                                        exit 1
-                                        ;;
-                                esac
-                            done
-                        '''
-
                         script {
                             env.SERVER_IP = sh(
                                 script: "openstack stack output show ${env.STACK_NAME} server_ip -f json | jq -r '.output_value'",
                                 returnStdout: true
                             ).trim()
-                            echo "Server IP saved: ${env.SERVER_IP}"
+                            echo "Server IP: ${env.SERVER_IP}"
                         }
                     }
                 }
             }
         }
 
-        stage('Test SSH access') {
+    stage('Deploy') {
             steps {
-                sshagent(['AnnaZhukSSH']) {
-                    withEnv(["TARGET_IP=${env.SERVER_IP}"]) {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'Dockerhub_AZ',
+                        usernameVariable: 'DOCKERHUB_USER',
+                        passwordVariable: 'DOCKERHUB_PASS'
+                    ),
+                    string(
+                        credentialsId: 'TG_Token_AZ',
+                        variable: 'TELEGRAM_TOKEN'
+                    )]) {
+
+                    sshagent(['AnnaZhukSSH']) {
+
                         sh '''
-                            MAX_RETRIES=6
-                            COUNT=0
-                            until ssh -o StrictHostKeyChecking=no ubuntu@$TARGET_IP "echo Server ready"; do
-                                echo "Wait for SSH..."
-                                sleep 10
-                                COUNT=$((COUNT+1))
-                                if [ $COUNT -ge $MAX_RETRIES ]; then
-                                    echo "SSH unavailable after $MAX_RETRIES retries"
-                                    exit 1
-                                fi
-                            done
+                        scp -o StrictHostKeyChecking=no docker-compose.yml ubuntu@$SERVER_IP:~
+
+                        ssh -o StrictHostKeyChecking=no ubuntu@$SERVER_IP << EOF
+
+                        echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin
+
+                        export DOCKERHUB_USER=$DOCKERHUB_USER
+                        export TELEGRAM_TOKEN=$TELEGRAM_TOKEN
+
+                        docker compose down || true
+                        docker compose pull
+                        docker compose up -d
+
+                        docker ps
+
+                        EOF
                         '''
                     }
                 }
             }
         }
+    }
+}
     }
 
     post {
