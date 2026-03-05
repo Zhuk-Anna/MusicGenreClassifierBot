@@ -30,7 +30,7 @@ pipeline {
             }
         }
 
-    stage('Deploy') {
+        stage('Deploy') {
             steps {
                 withCredentials([
                     usernamePassword(
@@ -68,8 +68,7 @@ pipeline {
             }
         }
     }
-}
-    }
+
 
     post {
         success {
