@@ -73,22 +73,23 @@ pipeline {
         stage('Test SSH access'){
             steps{
                 sshagent(['AnnaZhukSSH']) {
-                script {
-                    def serverIP = env.SERVER_IP
-                    sh """
-                        echo "Waiting for SSH to become available..."
-                        MAX_RETRIES=30
-                        COUNT=0
-                        until ssh -o StrictHostKeyChecking=no ubuntu@${serverIP} "echo Server ready"; do
-                            echo "Wait for SSH..."
-                            sleep 10
-                            COUNT=\$((COUNT+1))
-                            if [ \$COUNT -ge \$MAX_RETRIES ]; then
-                                echo "SSH unavailable after \$MAX_RETRIES retries"
-                                exit 1
-                            fi
-                        done
-                    """
+                    script {
+                        def serverIP = env.SERVER_IP
+                        sh """
+                            echo "Waiting for SSH to become available..."
+                            MAX_RETRIES=30
+                            COUNT=0
+                            until ssh -o StrictHostKeyChecking=no ubuntu@${serverIP} "echo Server ready"; do
+                                echo "Wait for SSH..."
+                                sleep 10
+                                COUNT=\$((COUNT+1))
+                                if [ \$COUNT -ge \$MAX_RETRIES ]; then
+                                    echo "SSH unavailable after \$MAX_RETRIES retries"
+                                    exit 1
+                                fi
+                            done
+                        """
+                    }
                 }
             }
         }
