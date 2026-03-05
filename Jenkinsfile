@@ -5,7 +5,7 @@ pipeline {
     }
 
     stages {
-        stage('Create or update Infrastructure') {
+        stage('Infrastructure') {
             steps {
                 withCredentials([string(credentialsId: 'Openstack_AZ', variable: 'OS_PASSWORD')]) {
                     withEnv([
@@ -18,68 +18,35 @@ pipeline {
                         "OS_INTERFACE=public",
                         "OS_IDENTITY_API_VERSION=3"
                     ]) {
-                    // Создаём стек в OpenStack через Heat (либо update при существующем)
-                    sh '''
-                        set -e
-                        echo "Check if stack exists..."
-                        if openstack stack show ${STACK_NAME} >/dev/null 2>&1; then
-                            echo "Stack exists. Updating..."
-                            openstack stack update -t infra/heat.yaml ${STACK_NAME}
-                        else
-                            echo "Creating stack..."
-                            openstack stack create -t infra/heat.yaml ${STACK_NAME}
-                        fi
-                    '''
-                }
-            }
-        }
-        stage('Wait for stack') {
-            steps {
-                withCredentials([string(credentialsId: 'Openstack_AZ', variable: 'OS_PASSWORD')]) {
-                    withEnv([
-                        "OS_AUTH_URL=https://cloud.crplab.ru:5000",
-                        "OS_PROJECT_NAME=students",
-                        "OS_USERNAME=master2025",
-                        "OS_USER_DOMAIN_NAME=Default",
-                        "OS_PROJECT_DOMAIN_ID=default",
-                        "OS_REGION_NAME=RegionOne",
-                        "OS_INTERFACE=public",
-                        "OS_IDENTITY_API_VERSION=3"
-                    ]) {
-                     sh '''
-                        set -e
-                        echo "Waiting for stack to finish..."
-                        openstack stack wait ${STACK_NAME}
-                     '''
-                }
-            }
-        }
-        stage('Get server IP') {
-            steps {
-                withCredentials([string(credentialsId: 'Openstack_AZ', variable: 'OS_PASSWORD')]) {
-                    withEnv([
-                        "OS_AUTH_URL=https://cloud.crplab.ru:5000",
-                        "OS_PROJECT_NAME=students",
-                        "OS_USERNAME=master2025",
-                        "OS_USER_DOMAIN_NAME=Default",
-                        "OS_PROJECT_DOMAIN_ID=default",
-                        "OS_REGION_NAME=RegionOne",
-                        "OS_INTERFACE=public",
-                        "OS_IDENTITY_API_VERSION=3"
-                    ]) {
-                    script {
+
+                        sh '''
+                            set -e
+                            echo "Check if stack exists..."
+                            if openstack stack show ${STACK_NAME} >/dev/null 2>&1; then
+                                echo "Stack exists. Updating..."
+                                openstack stack update -t infra/heat.yaml ${STACK_NAME}
+                            else
+                                echo "Creating stack..."
+                                openstack stack create -t infra/heat.yaml ${STACK_NAME}
+                            fi
+                        '''
+
+                        sh '''
+                            set -e
+                            echo "Waiting for stack to finish..."
+                            openstack stack wait ${STACK_NAME}
+                        '''
+
                         env.SERVER_IP = sh(
-                            script: """
-                                openstack stack output show ${env.STACK_NAME} server_ip -f value
-                            """,
+                            script: "openstack stack output show ${env.STACK_NAME} server_ip -f value",
                             returnStdout: true
                         ).trim()
-
                         echo "Server IP = ${env.SERVER_IP}"
                     }
                 }
             }
         }
+
         stage('Test SSH access'){
             steps{
                 sshagent(['AnnaZhukSSH']) {
