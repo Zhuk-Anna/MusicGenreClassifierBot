@@ -24,10 +24,10 @@ pipeline {
                             echo "Check if stack exists..."
                             if openstack stack show ${STACK_NAME} >/dev/null 2>&1; then
                                 echo "Stack exists. Updating..."
-                                openstack stack update -t infra/heat.yaml ${STACK_NAME}
+                                openstack stack update -t infra/heat/heat.yaml ${STACK_NAME}
                             else
                                 echo "Creating stack..."
-                                openstack stack create -t infra/heat.yaml ${STACK_NAME}
+                                openstack stack create -t infra/heat/heat.yaml ${STACK_NAME}
                             fi
                         '''
 
