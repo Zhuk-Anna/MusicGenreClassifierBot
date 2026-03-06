@@ -9,12 +9,18 @@ services:
     volumes:
       - ./logs:/app/logs
     restart: always
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/predict || exit 1" ]
+      interval: 5s
+      retries: 20
+      start_period: 5s
 
   bot:
     image: ${DOCKERHUB_USER}/music-bot:latest
     container_name: music-bot
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     environment:
       - API_URL=http://api:8000/predict
       - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
