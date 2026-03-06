@@ -48,11 +48,11 @@ pipeline {
                         sh """
                         scp -o StrictHostKeyChecking=no docker-compose.yml ubuntu@$SERVER_IP:~
 
-                        ssh -o StrictHostKeyChecking=no ubuntu@$SERVER_IP "
+                        ssh -tt -o StrictHostKeyChecking=no ubuntu@$SERVER_IP "
                             export DOCKERHUB_USER=\\\$DOCKERHUB_USER
                             export DOCKERHUB_PASS=\\\$DOCKERHUB_PASS
                             export TELEGRAM_TOKEN=\\\$TELEGRAM_TOKEN
-                            echo \\\$DOCKERHUB_PASS | docker login -u \\\$DOCKERHUB_USER --password-stdin;
+                            echo \\\$DOCKERHUB_PASS | docker login -u \\\$DOCKERHUB_USER --password-stdin
 
                             docker compose down || true
                             docker compose pull
