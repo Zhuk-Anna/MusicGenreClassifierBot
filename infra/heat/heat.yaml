@@ -25,12 +25,6 @@ parameters:
 
 resources:
 
-#  music_volume:
-#      type: OS::Cinder::Volume
-#      properties:
-#        size: { get_param: volume_size }
-#        name: AZ-music-app-volume
-
   music_server:
     type: OS::Nova::Server
     properties:
