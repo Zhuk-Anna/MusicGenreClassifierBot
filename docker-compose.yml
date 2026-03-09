@@ -1,4 +1,4 @@
-version: "3.9"
+# version: "3.9"
 
 services:
   api:
@@ -8,9 +8,9 @@ services:
       - "8000:8000"
     volumes:
       - ./logs:/app/logs
-    restart: always
+    restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8000/predict || exit 1" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
       interval: 5s
       retries: 20
       start_period: 5s
@@ -26,4 +26,4 @@ services:
       - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
     volumes:
       - ./logs:/app/logs
-    restart: always
+    restart: unless-stopped
