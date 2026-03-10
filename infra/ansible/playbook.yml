@@ -3,11 +3,7 @@
   connection: local
   vars_files:
     - vars/main.yml
-  vars:
-    dockerhub_user: "{{ lookup('env', 'DOCKERHUB_USER') }}"
-    dockerhub_pass: "{{ lookup('env', 'DOCKERHUB_PASS') }}"
-    telegram_token: "{{ lookup('env', 'TELEGRAM_TOKEN') }}"
-    VERSION: "{{ lookup('env', 'VERSION') }}"
+
   tasks:
 
     - name: Run Terraform
@@ -41,6 +37,10 @@
   become: yes
   vars:
     ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+    dockerhub_user: "{{ lookup('env','DOCKERHUB_USER') }}"
+    dockerhub_pass: "{{ lookup('env','DOCKERHUB_PASS') }}"
+    telegram_token: "{{ lookup('env','TELEGRAM_TOKEN') }}"
+    VERSION: "{{ lookup('env','VERSION') }}"
 
   tasks:
     - name: Update apt cache
