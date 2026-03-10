@@ -83,7 +83,7 @@ pipeline {
                         "OS_PROJECT_DOMAIN_ID=default",
                         "OS_REGION_NAME=RegionOne",
                         "OS_INTERFACE=public",
-                        "OS_IDENTITY_API_VERSION=3" //,
+                        "OS_IDENTITY_API_VERSION=3",
                         "DOCKERHUB_USER=${DOCKERHUB_USER}",
                         "DOCKERHUB_PASS=${DOCKERHUB_PASS}",
                         "TELEGRAM_TOKEN=${TELEGRAM_TOKEN}",
