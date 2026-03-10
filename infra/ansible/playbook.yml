@@ -3,6 +3,11 @@
   connection: local
   vars_files:
     - vars/main.yml
+  vars:
+    dockerhub_user: "{{ lookup('env', 'DOCKERHUB_USER') }}"
+    dockerhub_pass: "{{ lookup('env', 'DOCKERHUB_PASS') }}"
+    telegram_token: "{{ lookup('env', 'TELEGRAM_TOKEN') }}"
+    VERSION: "{{ lookup('env', 'VERSION') }}"
   tasks:
 
     - name: Run Terraform
@@ -97,38 +102,3 @@
         VERSION: "{{ VERSION | default('latest') }}"
         TELEGRAM_TOKEN: "{{ telegram_token }}"
 
-#    - name: Pull and run API container
-#      community.docker.docker_container:
-#        name: music-api
-#        image: "{{ dockerhub_user }}/music-api:{{ VERSION | default('latest') }}"
-#        state: started
-#        ports:
-#          - "8000:8000"
-#        volumes:
-#          - "/home/ubuntu/logs:/app/logs"
-#        restart_policy: unless-stopped
-#        healthcheck:
-#          test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
-#          interval: 5s
-#          retries: 20
-#          start_period: 5s
-#
-#    - name: Wait for API to be healthy
-#      wait_for:
-#        host: 127.0.0.1
-#        port: 8000
-#        delay: 5
-#        timeout: 120
-#        state: started
-#
-#    - name: Pull and run Telegram bot container
-#      community.docker.docker_container:
-#        name: music-bot
-#        image: "{{ dockerhub_user }}/music-bot:{{ VERSION | default('latest') }}"
-#        state: started
-#        volumes:
-#          - "/home/ubuntu/logs:/app/logs"
-#        restart_policy: unless-stopped
-#        env:
-#          API_URL: "http://127.0.0.1:8000/predict"
-#          TELEGRAM_TOKEN: "{{ telegram_token }}"
