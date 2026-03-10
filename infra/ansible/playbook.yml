@@ -39,7 +39,7 @@
     - name: Install Docker
       apt:
         name: docker.io
-        state: present
+        state: latest
         update_cache: yes
 
     - name: Ensure docker service is running
@@ -128,12 +128,3 @@
 #        env:
 #          API_URL: "http://127.0.0.1:8000/predict"
 #          TELEGRAM_TOKEN: "{{ telegram_token }}"
-
-#- name: Destroy infrastructure
-#  hosts: 127.0.0.1
-#  connection: local
-#  tasks:
-#    - name: Destroy terraform
-#      community.general.terraform:
-#        project_path: "../terraform/openstack"
-#        state: absent

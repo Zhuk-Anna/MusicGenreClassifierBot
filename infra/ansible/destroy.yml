@@ -1,0 +1,9 @@
+- name: Destroy infrastructure
+  hosts: 127.0.0.1
+  connection: local
+  tasks:
+    - name: Destroy terraform-managed resources
+      community.general.terraform:
+        project_path: "../terraform/openstack"
+        state: absent
+        force_init: yes
