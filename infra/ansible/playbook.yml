@@ -87,7 +87,7 @@
 
     - name: Copy docker-compose.yml
       copy:
-        src: docker-compose.yml
+        src: ../../docker-compose.yml
         dest: /music-app/docker-compose.yml
 
     - name: Run docker compose
