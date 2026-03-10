@@ -90,10 +90,10 @@ pipeline {
                         "VERSION=${APP_VERSION}.${BUILD_NUMBER}"
                     ]) {
                         sshagent(['AnnaZhukSSH']) {
-                            sh """
+                            sh '''
                                 cd infra/ansible
                                 ansible-playbook playbook.yml
-                            """
+                            '''
                         }
                     }
                 }
