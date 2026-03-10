@@ -11,11 +11,3 @@ terraform {
 
 # Configure the OpenStack Provider
 provider "openstack" {}
-
-# provider "openstack" {
-#     user_name   = "master2025"
-#     tenant_name = "students"
-#     password    = ""
-#     auth_url    = "https://cloud.crplab.ru:5000/v3"
-#     region      = "RegionOne"
-# }
