@@ -27,6 +27,8 @@
 - name: Install Docker & deploy containers
   hosts: music_servers
   become: yes
+  vars:
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 
   roles:
     - role: geerlingguy.docker
