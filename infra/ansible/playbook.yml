@@ -24,6 +24,12 @@
         groups: music_servers
         ansible_user: ubuntu
 
+    - name: Wait for SSH to become available
+      wait_for_connection:
+        delay: 10
+        timeout: 300
+      delegate_to: "{{ tf_result.outputs.server_ip.value }}"
+
 
 - name: Install Docker & deploy containers
   hosts: music_servers
