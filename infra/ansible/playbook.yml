@@ -24,20 +24,46 @@
         groups: music_servers
         ansible_user: ubuntu
 
+
 - name: Install Docker & deploy containers
   hosts: music_servers
   become: yes
   vars:
     ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 
-  roles:
-    - role: geerlingguy.docker
-      vars:
-        docker_install_compose: true
-        docker_compose_version: 2.18.1
-        docker_users: [ubuntu]
-
   tasks:
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+        update_cache: yes
+
+    - name: Ensure docker service is running
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add ubuntu user to docker group
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
+
+    - name: Create CLI plugins directory
+      file:
+        path: /home/ubuntu/.docker/cli-plugins
+        state: directory
+        owner: ubuntu
+        mode: '0755'
+
+    - name: Download Docker Compose v5
+      get_url:
+        url: https://github.com/docker/compose/releases/download/v5.0.1/docker-compose-linux-x86_64
+        dest: /home/ubuntu/.docker/cli-plugins/docker-compose
+        mode: '0755'
+        owner: ubuntu
+
     - name: Login to Docker Hub
       community.docker.docker_login:
         username: "{{ dockerhub_user }}"
