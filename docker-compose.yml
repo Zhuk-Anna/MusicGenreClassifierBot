@@ -2,7 +2,7 @@
 
 services:
   api:
-    image: ${DOCKERHUB_USER}/music-api:latest
+    image: ${DOCKERHUB_USER}/music-api:${VERSION:-latest}
     container_name: music-api
     ports:
       - "8000:8000"
@@ -16,7 +16,7 @@ services:
       start_period: 5s
 
   bot:
-    image: ${DOCKERHUB_USER}/music-bot:latest
+    image: ${DOCKERHUB_USER}/music-bot:${VERSION:-latest}
     container_name: music-bot
     depends_on:
       api:

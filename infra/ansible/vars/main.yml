@@ -1,0 +1,7 @@
+key_pair: "AnnaZ"
+flavor_name: "m1.small"
+network_name: "sutdents-net" # bug in openstack 'students-net'
+image_name: "ununtu-22.04" # bug in openstack 'ubuntu-22.04'
+volume_size: 10
+private_key_path: "~/.ssh/AnnaZ.pem"
+dockerhub_user: "zhukann"

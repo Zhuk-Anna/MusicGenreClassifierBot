@@ -1,0 +1,107 @@
+- name: Run Terraform and configure VM
+  hosts: 127.0.0.1
+  connection: local
+  vars_files:
+    - vars/main.yml
+  tasks:
+
+    - name: Run Terraform
+      community.general.terraform:
+        project_path: "../terraform/openstack"
+        state: present
+        force_init: yes
+        variables:
+          key_pair: "{{ key_pair }}"
+          flavor_name: "{{ flavor_name }}"
+          network_name: "{{ network_name }}"
+          image_name: "{{ image_name }}"
+          volume_size: "{{ volume_size }}"
+      register: tf_result
+
+    - name: Add new VM to dynamic inventory
+      add_host:
+        name: "{{ tf_result.outputs.server_ip.value }}"
+        groups: music_servers
+        ansible_user: ubuntu
+
+- name: Install Docker & deploy containers
+  hosts: music_servers
+  become: yes
+
+  roles:
+    - role: geerlingguy.docker
+      vars:
+        docker_install_compose: true
+        docker_compose_version: 2.18.1
+        docker_users: [ubuntu]
+
+  tasks:
+    - name: Login to Docker Hub
+      community.docker.docker_login:
+        username: "{{ dockerhub_user }}"
+        password: "{{ dockerhub_pass }}"
+
+    - name: Create project directory
+      file:
+        path: /music-app
+        state: directory
+        mode: "0755"
+
+    - name: Copy docker-compose.yml
+      copy:
+        src: docker-compose.yml
+        dest: /music-app/docker-compose.yml
+
+    - name: Run docker compose
+      community.docker.docker_compose_v2:
+        project_src: /music-app
+        pull: always
+      environment:
+        DOCKERHUB_USER: "{{ dockerhub_user }}"
+        VERSION: "{{ VERSION | default('latest') }}"
+        TELEGRAM_TOKEN: "{{ telegram_token }}"
+
+#    - name: Pull and run API container
+#      community.docker.docker_container:
+#        name: music-api
+#        image: "{{ dockerhub_user }}/music-api:{{ VERSION | default('latest') }}"
+#        state: started
+#        ports:
+#          - "8000:8000"
+#        volumes:
+#          - "/home/ubuntu/logs:/app/logs"
+#        restart_policy: unless-stopped
+#        healthcheck:
+#          test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+#          interval: 5s
+#          retries: 20
+#          start_period: 5s
+#
+#    - name: Wait for API to be healthy
+#      wait_for:
+#        host: 127.0.0.1
+#        port: 8000
+#        delay: 5
+#        timeout: 120
+#        state: started
+#
+#    - name: Pull and run Telegram bot container
+#      community.docker.docker_container:
+#        name: music-bot
+#        image: "{{ dockerhub_user }}/music-bot:{{ VERSION | default('latest') }}"
+#        state: started
+#        volumes:
+#          - "/home/ubuntu/logs:/app/logs"
+#        restart_policy: unless-stopped
+#        env:
+#          API_URL: "http://127.0.0.1:8000/predict"
+#          TELEGRAM_TOKEN: "{{ telegram_token }}"
+
+#- name: Destroy infrastructure
+#  hosts: 127.0.0.1
+#  connection: local
+#  tasks:
+#    - name: Destroy terraform
+#      community.general.terraform:
+#        project_path: "../terraform/openstack"
+#        state: absent
