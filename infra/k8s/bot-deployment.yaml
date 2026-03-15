@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: music-bot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: music-bot
+  template:
+    metadata:
+      labels:
+        app: music-bot
+    spec:
+      containers:
+      - name: music-bot
+        image: zhukann/music-bot:latest
+
+        env:
+        - name: API_URL
+          value: "http://music-api:8000/predict"
+
+        - name: TELEGRAM_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: annazhuk-secret
+              key: AZ_TELEGRAM_TOKEN

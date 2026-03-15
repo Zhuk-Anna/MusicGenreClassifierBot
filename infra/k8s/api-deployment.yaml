@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: music-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: music-api
+  template:
+    metadata:
+      labels:
+        app: music-api
+    spec:
+      containers:
+      - name: music-api
+        image: zhukann/music-api:latest
+        ports:
+        - containerPort: 8000
+
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
+
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
